@@ -1,0 +1,100 @@
+I want to build a **full-stack MVP web application** called **"Smart Financial Assistant"** using Python + JavaScript + Streamlit (or Flask) on Replit.
+
+Please generate **all the necessary code and page structures** for a working app, broken down into frontend and backend. This app should use **agentic AI workflows with long-term memory** (MCP-style) to help users manage money, track portfolios, and get financial suggestions.
+
+---
+
+💡 CORE PURPOSE:
+Build a smart, interactive web app where users can:
+- View real-time stock data
+- Manage portfolios
+- Receive reminders (SIPs, tax deadlines)
+- Ask natural language questions like “How’s my portfolio doing?”
+- Get intelligent AI responses using LLMs (GPT-4 or Mistral)
+- Have their preferences stored (e.g., investment style, risk appetite)
+- Use agents for multi-step financial analysis
+
+---
+
+🌐 PAGES TO INCLUDE:
+Please generate separate code (frontend + backend) for each of these:
+
+1. **🟦 Landing Page (index.html / main.py > `/`)**
+   - Welcome message, logo
+   - Explain the assistant’s purpose
+   - “Get Started” button that leads to Dashboard
+   - Simple login/signup form
+
+2. **📊 Dashboard Page (`/dashboard`)**
+   - Greeting (with username)
+   - Portfolio summary: Total value, gains/losses
+   - Embedded chart (e.g., with Plotly or Chart.js)
+   - Quick snapshot of top 5 holdings (from yFinance/Zerodha)
+
+3. **🧠 AI Assistant Page (`/assistant`)**
+   - Chat-like UI where users type questions
+   - Example prompts like: 
+     - “What are the best SIPs this month?”
+     - “Summarize my holdings and risks”
+   - Behind the scenes: Uses LangChain + FAISS + OpenAI API to generate context-aware answers
+
+4. **📁 User Preferences Page (`/profile`)**
+   - Risk tolerance (slider or dropdown)
+   - Investment goals (text area)
+   - Preferred asset types (checkboxes)
+   - Save button — stores info in PostgreSQL
+
+5. **⏰ Reminders Page (`/reminders`)**
+   - View/edit upcoming reminders (SIPs, tax deadlines)
+   - Add custom reminders (with frequency selector)
+   - AI-suggested reminders based on past data
+
+6. **📈 Insights Page (`/insights`)**
+   - AI-generated suggestions:
+     - “Rebalance your portfolio”
+     - “Reduce exposure to high-risk stocks”
+   - Based on user memory, past questions, holdings
+
+7. **🔒 Auth Pages (`/login`, `/signup`)**
+   - Login and register with email/password
+   - Use Flask sessions or Firebase Auth
+
+---
+
+⚙️ BACKEND FEATURES TO BUILD:
+Please create backend logic and APIs in Python (Flask or FastAPI):
+
+- `/api/stocks/<ticker>`: Return yFinance data
+- `/api/portfolio`: Fetch user's saved portfolio
+- `/api/memory`: Get past interactions from FAISS
+- `/api/chat`: Accept user query → Use LangChain agents → Return GPT-4 response
+- `/api/profile`: Get/set user preferences from PostgreSQL
+- `/api/reminders`: CRUD for reminder list
+
+Use `.env` for API keys (OpenAI, PostgreSQL, Zerodha).
+
+---
+
+🧠 MEMORY + AGENT SETUP:
+Use LangChain + FAISS for long-term memory:
+- Store all user queries + AI responses as documents
+- Use LangChain's VectorStoreRetrieverMemory
+- Add a multi-step agent using `initialize_agent()` with tools like:
+  - get_stock_data()
+  - fetch_user_profile()
+  - suggest_investments()
+
+---
+
+🧰 TECH STACK TO USE:
+- **Frontend**: HTML/CSS/JS or Streamlit
+- **Backend**: Python (Flask/FastAPI preferred)
+- **AI**: OpenAI GPT-4 or Mistral via Hugging Face
+- **Memory**: FAISS or ChromaDB for vector memory
+- **Database**: PostgreSQL (user info, portfolios, reminders)
+- **APIs**: yFinance, Zerodha Kite (mock if needed)
+- **Infra**: Docker-ready; run on Replit or Hugging Face Spaces
+
+---
+
+🗂️ FILE STRUCTURE TO GENERATE:
