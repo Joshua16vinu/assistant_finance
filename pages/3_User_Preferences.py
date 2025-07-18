@@ -62,7 +62,7 @@ with col1:
     monthly_investment = st.number_input(
         "Monthly Investment Amount ($)",
         min_value=0,
-        value=user_prefs.get('monthly_investment', 1000),
+        value=int(user_prefs.get('monthly_investment', 1000)),
         step=100
     )
 
@@ -104,35 +104,36 @@ st.subheader("🔔 Notification Preferences")
 col1, col2 = st.columns(2)
 
 with col1:
+    notifications = user_prefs.get('notifications', {})
     email_notifications = st.checkbox(
         "Email Notifications",
-        value=user_prefs.get('email_notifications', True)
+        value=notifications.get('email_notifications', True)
     )
     
     portfolio_alerts = st.checkbox(
         "Portfolio Performance Alerts",
-        value=user_prefs.get('portfolio_alerts', True)
+        value=notifications.get('portfolio_alerts', True)
     )
     
     market_news = st.checkbox(
         "Market News & Updates",
-        value=user_prefs.get('market_news', True)
+        value=notifications.get('market_news', True)
     )
 
 with col2:
     reminder_notifications = st.checkbox(
         "Reminder Notifications",
-        value=user_prefs.get('reminder_notifications', True)
+        value=notifications.get('reminder_notifications', True)
     )
     
     ai_insights = st.checkbox(
         "AI-Generated Insights",
-        value=user_prefs.get('ai_insights', True)
+        value=notifications.get('ai_insights', True)
     )
     
     weekly_reports = st.checkbox(
         "Weekly Performance Reports",
-        value=user_prefs.get('weekly_reports', False)
+        value=notifications.get('weekly_reports', False)
     )
 
 # Financial Goals Section
@@ -156,13 +157,13 @@ with col1:
         "Age",
         min_value=18,
         max_value=100,
-        value=user_prefs.get('age', 30)
+        value=int(user_prefs.get('age', 30)) if user_prefs.get('age') else 30
     )
     
     annual_income = st.number_input(
         "Annual Income ($)",
         min_value=0,
-        value=user_prefs.get('annual_income', 75000),
+        value=int(user_prefs.get('annual_income', 75000)),
         step=5000
     )
 
@@ -170,13 +171,13 @@ with col2:
     dependents = st.number_input(
         "Number of Dependents",
         min_value=0,
-        value=user_prefs.get('dependents', 0)
+        value=int(user_prefs.get('dependents', 0))
     )
     
     debt_amount = st.number_input(
         "Total Debt Amount ($)",
         min_value=0,
-        value=user_prefs.get('debt_amount', 0),
+        value=int(user_prefs.get('debt_amount', 0)),
         step=1000
     )
 
