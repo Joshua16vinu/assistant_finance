@@ -1,0 +1,35 @@
+{
+  "aakanksh": {
+    "risk_tolerance": "Moderate",
+    "investment_timeline": "Less than 1 year",
+    "investment_goals": [
+      "Wealth Building",
+      "Retirement Planning"
+    ],
+    "monthly_investment": 160000,
+    "preferred_assets": [
+      "Stocks",
+      "ETFs"
+    ],
+    "sector_preferences": [
+      "Technology",
+      "Healthcare"
+    ],
+    "geographic_preferences": [
+      "US Domestic"
+    ],
+    "esg_important": false,
+    "email_notifications": true,
+    "portfolio_alerts": true,
+    "market_news": true,
+    "reminder_notifications": true,
+    "ai_insights": true,
+    "weekly_reports": false,
+    "financial_goals": "",
+    "age": 30,
+    "annual_income": 70000,
+    "dependents": 0,
+    "debt_amount": 0,
+    "updated_date": "2025-07-18T15:29:56.061442"
+  }
+}

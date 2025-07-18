@@ -16,32 +16,102 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📊 Portfolio Dashboard")
+# Enhanced CSS styling
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+}
 
-# Sidebar
+.main-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 20px 0;
+    box-shadow: 0 10px 40px rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.metric-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px rgba(31, 38, 135, 0.5);
+}
+
+.gradient-text {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+}
+
+.chart-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="main-card">
+    <h1 style="text-align: center; margin-bottom: 20px;">
+        <span class="gradient-text">📊 Portfolio Dashboard</span>
+    </h1>
+    <p style="text-align: center; color: #666; font-size: 1.1em;">
+        Track your investments and monitor performance in real-time
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# Import UI components
+from utils.ui_components import add_enhanced_sidebar, add_page_css
+
+# Add consistent styling and sidebar
+add_page_css()
+add_enhanced_sidebar()
+
+# Portfolio filters in sidebar
 with st.sidebar:
-    st.image("https://via.placeholder.com/150x50/1f77b4/ffffff?text=FinAssist", width=150)
     st.markdown("---")
-    
-    # Portfolio filters
-    st.subheader("Portfolio Filters")
+    st.subheader("📊 Portfolio Filters")
     time_period = st.selectbox("Time Period", ["1D", "5D", "1M", "3M", "6M", "1Y", "5Y"])
     view_type = st.selectbox("View Type", ["Holdings", "Performance", "Allocation"])
 
-# Main content
+# Enhanced metrics with animations
 col1, col2, col3, col4 = st.columns(4)
 
-with col1:
-    st.metric("Total Portfolio Value", "$125,430.50", "+$2,450.30 (2.0%)")
+metrics = [
+    ("Total Portfolio Value", "$125,430.50", "+$2,450.30 (2.0%)", "#4caf50"),
+    ("Today's P&L", "$1,250.75", "+1.2%", "#4caf50"),
+    ("Total Return", "$15,430.50", "+14.1%", "#4caf50"),
+    ("Cash Available", "$5,680.25", "", "#2196f3")
+]
 
-with col2:
-    st.metric("Today's P&L", "$1,250.75", "+1.2%")
-
-with col3:
-    st.metric("Total Return", "$15,430.50", "+14.1%")
-
-with col4:
-    st.metric("Cash Available", "$5,680.25", "")
+for i, (label, value, delta, color) in enumerate(metrics):
+    with [col1, col2, col3, col4][i]:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">{label}</div>
+            <div style="font-size: 1.8em; font-weight: bold; color: #333; margin-bottom: 5px;">{value}</div>
+            <div style="color: {color}; font-weight: bold; font-size: 0.9em;">{delta}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -103,7 +173,7 @@ try:
             return 'color: red'
         return ''
     
-    styled_df = holdings_df.style.applymap(color_pnl, subset=['P&L', '% Change'])
+    styled_df = holdings_df.style.map(color_pnl, subset=['P&L', '% Change'])
     st.dataframe(styled_df, use_container_width=True)
     
 except Exception as e:

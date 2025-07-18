@@ -1,0 +1,20 @@
+{
+  "joshua": {
+    "email": "JOSHUVK16@GMAIL.COM",
+    "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "created_date": "2025-07-18T15:18:13.998094",
+    "last_login": "2025-07-18T15:49:00.138788",
+    "preferences": {},
+    "portfolio": [],
+    "reminders": []
+  },
+  "aakanksh": {
+    "email": "abc@gmail.com",
+    "password_hash": "38083c7ee9121e17401883566a148aa5c2e2d55dc53bc4a94a026517dbff3c6b",
+    "created_date": "2025-07-18T15:20:34.230126",
+    "last_login": "2025-07-18T15:47:41.527266",
+    "preferences": {},
+    "portfolio": [],
+    "reminders": []
+  }
+}
