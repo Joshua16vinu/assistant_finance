@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.auth import check_authentication
-from utils.database import get_user_reminders, save_reminder, delete_reminder
+from utils.reminders import get_user_reminders, add_reminder, delete_reminder
 from datetime import datetime, timedelta
 import pandas as pd
 
@@ -81,7 +81,7 @@ with st.expander("➕ Add New Reminder", expanded=True):
                     'created_date': datetime.now().isoformat()
                 }
                 
-                save_reminder(st.session_state.username, reminder_data)
+                add_reminder(st.session_state.username, reminder_data)
                 st.success("✅ Reminder added successfully!")
                 st.session_state.reminders_updated = True
                 st.rerun()

@@ -4,6 +4,10 @@ import json
 from datetime import datetime
 from google import genai
 from google.genai import types
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from utils.database_setup import get_database_connection
+from utils.auth import get_user_id
 
 # Initialize Gemini client
 # Note that the newest Gemini model series is "gemini-2.5-flash" or "gemini-2.5-pro"
@@ -14,7 +18,12 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 def get_financial_context(username):
     """Get user's financial context for AI responses"""
     try:
-        # In a real app, this would fetch from database
+        from utils.user_preferences import get_user_preferences
+        
+        # Get user preferences from database
+        preferences = get_user_preferences(username)
+        
+        # Get portfolio data (placeholder for now, would be from portfolio_holdings table)
         context = {
             'portfolio_value': 125430,
             'holdings': [
@@ -24,22 +33,102 @@ def get_financial_context(username):
                 {'symbol': 'TSLA', 'shares': 20, 'value': 17008.00},
                 {'symbol': 'AMZN', 'shares': 15, 'value': 2711.25}
             ],
-            'risk_tolerance': 'Moderate',
-            'investment_goals': ['Wealth Building', 'Retirement Planning'],
-            'monthly_investment': 1000,
-            'age': 35,
-            'investment_timeline': '10+ years'
+            'risk_tolerance': preferences.get('risk_tolerance', 'Moderate'),
+            'investment_goals': preferences.get('investment_goals', ['Wealth Building']),
+            'monthly_investment': preferences.get('monthly_investment', 1000),
+            'age': preferences.get('age', 35),
+            'investment_timeline': preferences.get('investment_timeline', '10+ years'),
+            'annual_income': preferences.get('annual_income', 0),
+            'debt_amount': preferences.get('debt_amount', 0),
+            'financial_goals': preferences.get('financial_goals', '')
         }
         return context
     except Exception as e:
         st.error(f"Error getting financial context: {str(e)}")
         return {}
 
+def save_chat_message(username, role, content, session_id=None):
+    """Save chat message to database"""
+    user_id = get_user_id(username)
+    if not user_id:
+        return False
+    
+    engine = get_database_connection()
+    if not engine:
+        return False
+    
+    try:
+        with engine.connect() as conn:
+            conn.execute(
+                text("""
+                    INSERT INTO ai_chat_history (user_id, message_role, message_content, session_id)
+                    VALUES (:user_id, :role, :content, :session_id)
+                """),
+                {
+                    "user_id": user_id,
+                    "role": role,
+                    "content": content,
+                    "session_id": session_id
+                }
+            )
+            conn.commit()
+            return True
+    
+    except SQLAlchemyError as e:
+        st.error(f"Error saving chat message: {str(e)}")
+        return False
+
+def get_chat_history(username, limit=20):
+    """Get chat history from database"""
+    user_id = get_user_id(username)
+    if not user_id:
+        return []
+    
+    engine = get_database_connection()
+    if not engine:
+        return []
+    
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("""
+                    SELECT message_role, message_content, timestamp
+                    FROM ai_chat_history 
+                    WHERE user_id = :user_id
+                    ORDER BY timestamp DESC
+                    LIMIT :limit
+                """),
+                {"user_id": user_id, "limit": limit}
+            )
+            messages = result.fetchall()
+            
+            # Reverse to get chronological order
+            chat_history = []
+            for msg in reversed(messages):
+                chat_history.append({
+                    'role': msg[0],
+                    'content': msg[1],
+                    'timestamp': msg[2].isoformat() if msg[2] else None
+                })
+            
+            return chat_history
+    
+    except SQLAlchemyError as e:
+        st.error(f"Error getting chat history: {str(e)}")
+        return []
+
 def get_ai_response(user_query, username, chat_history=None):
     """Get AI response to user query"""
     try:
+        # Save user message to database
+        save_chat_message(username, "user", user_query)
+        
         # Get user's financial context
         context = get_financial_context(username)
+        
+        # Get recent chat history if not provided
+        if chat_history is None:
+            chat_history = get_chat_history(username, limit=10)
         
         # Prepare system message with context
         system_message = f"""
@@ -100,7 +189,12 @@ def get_ai_response(user_query, username, chat_history=None):
             contents=combined_prompt
         )
         
-        return response.text or "I apologize, but I'm having trouble processing your request right now."
+        ai_response = response.text or "I apologize, but I'm having trouble processing your request right now."
+        
+        # Save AI response to database
+        save_chat_message(username, "assistant", ai_response)
+        
+        return ai_response
     
     except Exception as e:
         st.error(f"Error getting AI response: {str(e)}")

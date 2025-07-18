@@ -1,26 +1,13 @@
 import streamlit as st
 import hashlib
-import json
 import os
 from datetime import datetime
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
+from utils.database_setup import get_database_connection
 
-# Simple file-based user database for MVP
-USER_DATA_FILE = "user_data.json"
-
-def load_user_data():
-    """Load user data from file"""
-    if os.path.exists(USER_DATA_FILE):
-        try:
-            with open(USER_DATA_FILE, 'r') as f:
-                return json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            return {}
-    return {}
-
-def save_user_data(data):
-    """Save user data to file"""
-    with open(USER_DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
+# Database configuration
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def hash_password(password):
     """Hash password using SHA-256"""
@@ -28,37 +15,68 @@ def hash_password(password):
 
 def authenticate_user(username, password):
     """Authenticate user with username and password"""
-    user_data = load_user_data()
+    engine = get_database_connection()
+    if not engine:
+        return False
     
-    if username in user_data:
-        stored_hash = user_data[username]['password_hash']
-        if stored_hash == hash_password(password):
-            # Update last login
-            user_data[username]['last_login'] = datetime.now().isoformat()
-            save_user_data(user_data)
-            return True
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT id, password_hash FROM users WHERE username = :username AND is_active = TRUE"),
+                {"username": username}
+            )
+            user = result.fetchone()
+            
+            if user and user[1] == hash_password(password):
+                # Update last login
+                conn.execute(
+                    text("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = :user_id"),
+                    {"user_id": user[0]}
+                )
+                conn.commit()
+                return True
+    
+    except SQLAlchemyError as e:
+        st.error(f"Authentication error: {str(e)}")
     
     return False
 
 def register_user(username, email, password):
     """Register a new user"""
-    user_data = load_user_data()
+    engine = get_database_connection()
+    if not engine:
+        return False
     
-    if username in user_data:
-        return False  # User already exists
+    try:
+        with engine.connect() as conn:
+            # Check if user already exists
+            result = conn.execute(
+                text("SELECT id FROM users WHERE username = :username OR email = :email"),
+                {"username": username, "email": email}
+            )
+            existing_user = result.fetchone()
+            
+            if existing_user:
+                return False  # User already exists
+            
+            # Create new user
+            conn.execute(
+                text("""
+                    INSERT INTO users (username, email, password_hash, created_date)
+                    VALUES (:username, :email, :password_hash, CURRENT_TIMESTAMP)
+                """),
+                {
+                    "username": username,
+                    "email": email,
+                    "password_hash": hash_password(password)
+                }
+            )
+            conn.commit()
+            return True
     
-    user_data[username] = {
-        'email': email,
-        'password_hash': hash_password(password),
-        'created_date': datetime.now().isoformat(),
-        'last_login': None,
-        'preferences': {},
-        'portfolio': [],
-        'reminders': []
-    }
-    
-    save_user_data(user_data)
-    return True
+    except SQLAlchemyError as e:
+        st.error(f"Registration error: {str(e)}")
+        return False
 
 def check_authentication():
     """Check if user is authenticated, redirect to login if not"""
@@ -80,14 +98,68 @@ def logout_user():
 
 def get_user_info(username):
     """Get user information"""
-    user_data = load_user_data()
-    return user_data.get(username, {})
+    engine = get_database_connection()
+    if not engine:
+        return {}
+    
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT id, username, email, created_date, last_login FROM users WHERE username = :username"),
+                {"username": username}
+            )
+            user = result.fetchone()
+            
+            if user:
+                return {
+                    'id': user[0],
+                    'username': user[1],
+                    'email': user[2],
+                    'created_date': user[3].isoformat() if user[3] else None,
+                    'last_login': user[4].isoformat() if user[4] else None
+                }
+    
+    except SQLAlchemyError as e:
+        st.error(f"Error getting user info: {str(e)}")
+    
+    return {}
+
+def get_user_id(username):
+    """Get user ID by username"""
+    engine = get_database_connection()
+    if not engine:
+        return None
+    
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT id FROM users WHERE username = :username"),
+                {"username": username}
+            )
+            user = result.fetchone()
+            return user[0] if user else None
+    
+    except SQLAlchemyError as e:
+        st.error(f"Error getting user ID: {str(e)}")
+        return None
 
 def update_user_info(username, info):
     """Update user information"""
-    user_data = load_user_data()
-    if username in user_data:
-        user_data[username].update(info)
-        save_user_data(user_data)
-        return True
-    return False
+    engine = get_database_connection()
+    if not engine:
+        return False
+    
+    try:
+        with engine.connect() as conn:
+            # Update basic user info (email, etc.)
+            if 'email' in info:
+                conn.execute(
+                    text("UPDATE users SET email = :email WHERE username = :username"),
+                    {"email": info['email'], "username": username}
+                )
+            conn.commit()
+            return True
+    
+    except SQLAlchemyError as e:
+        st.error(f"Error updating user info: {str(e)}")
+        return False

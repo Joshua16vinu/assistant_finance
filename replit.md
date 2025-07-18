@@ -80,9 +80,9 @@ Preferred communication style: Simple, everyday language.
 - **Configuration**: Environment variables for API keys (OpenAI)
 
 ### Data Storage
-- **Current Implementation**: File-based JSON storage for MVP
-- **Production Ready**: Architecture supports easy migration to PostgreSQL
-- **Data Files**: User data, preferences, reminders, and portfolio data stored in JSON format
+- **Current Implementation**: PostgreSQL database with comprehensive schema
+- **Database Tables**: Users, user_preferences, portfolio_holdings, transactions, reminders, ai_chat_history, portfolio_performance, market_data_cache
+- **Data Persistence**: Full relational database with proper foreign keys and indexing
 
 ### Scalability Considerations
 - **Database Migration**: Utilities structured to easily switch from file-based to PostgreSQL

@@ -96,9 +96,12 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Initialize chat history
+# Initialize chat history from database
+from utils.ai_assistant import get_chat_history
+
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
+    # Load chat history from database
+    st.session_state.chat_history = get_chat_history(st.session_state.username)
 
 # Import UI components
 from utils.ui_components import add_enhanced_sidebar, add_page_css

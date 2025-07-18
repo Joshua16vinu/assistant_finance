@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.auth import check_authentication
-from utils.database import save_user_preferences, get_user_preferences
+from utils.user_preferences import save_user_preferences, get_user_preferences
 import json
 
 # Check authentication

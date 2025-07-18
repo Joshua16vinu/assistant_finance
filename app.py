@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from utils.auth import authenticate_user, register_user, logout_user
 from utils.financial_data import get_market_overview
+from utils.database_setup import initialize_database
 import plotly.graph_objects as go
 import plotly.express as px
 
@@ -454,6 +455,15 @@ def show_main_dashboard():
             
             if st.button(f"Go to {title}", use_container_width=True, key=f"action_{i}"):
                 st.switch_page(page)
+
+# Initialize database on app startup
+@st.cache_resource
+def init_db():
+    """Initialize database with caching to avoid repeated initialization"""
+    return initialize_database()
+
+# Initialize database
+init_db()
 
 # Main application logic
 if not st.session_state.authenticated:
